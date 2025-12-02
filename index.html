@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Cheers — 世界の乾杯</title>
+
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="乾杯コレクション">
+
+<style>
+/* ===========================
+    Global Style (変更なし)
+=========================== */
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: sans-serif;
+    background: radial-gradient(circle at center, #4a2b14 0%, #2c1a10 60%, #160d07 100%);
+    color: #f6f1e9;
+    text-align: center;
+}
+
+h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+}
+
+.subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 22px;
+    color: #d7c7a8;
+}
+
+/* Region block */
+.region {
+    margin: 24px 0 32px;
+}
+
+.region-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #f3e2c0;
+}
+
+/* Grid inside each region */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 18px;
+    justify-items: center;
+}
+
+/* Country card */
+.country {
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    padding: 10px 5px;
+    border-radius: 10px;
+    transition: 0.25s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.country:hover {
+    background: rgba(255, 230, 180, 0.08);
+    transform: translateY(-4px);
+}
+
+/* Flag circle */
+.flag {
+    width: 74px;
+    height: 74px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 8px;
+    border: 2px solid rgba(255, 215, 160, 0.4);
+}
+
+.flag img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Names */
+.name-jp {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.name-en {
+    font-size: 0.75rem;
+    color: #d0c6b5;
+    margin: 0;
+}
+
+/* ===========================
+    Detail Card Style (変更なし)
+=========================== */
+#detail-card {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    min-height: 250px;
+    background: #110905;
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    box-sizing: border-box;
+    transform: translateY(100%);
+    transition: transform 0.5s ease-out;
+    text-align: left;
+    z-index: 10;
+}
+
+#detail-card.active {
+    transform: translateY(0);
+}
+
+#detail-card .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+#detail-card .country-info {
+    flex-grow: 1;
+}
+
+#detail-card .country-name-jp {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0;
+}
+#detail-card .country-name-en {
+    font-size: 0.9rem;
+    color: #d7c7a8;
+    margin: 0;
+}
+
+#detail-card .cheers-word {
+    font-size: 2.8rem;
+    font-weight: bold;
+    color: #ffd7a0;
+    margin: 0 0 5px;
+    line-height: 1.2;
+}
+
+#detail-card .reading {
+    font-size: 1.2rem;
+    color: #d7c7a8;
+    margin: 0 0 15px;
+}
+
+#detail-card .meaning {
+    font-size: 0.9rem;
+    color: #e0e0e0;
+    margin: 0 0 10px;
+    font-weight: 600;
+}
+
+#detail-card .note-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #f3e2c0;
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
+#detail-card .note-text {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #d7c7a8;
+}
+
+#detail-card .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: #f6f1e9;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+/* 発音ボタンのスタイル */
+.audio-btn {
+    background: #ff5722;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.audio-btn:hover {
+    background: #e64a19;
+}
+</style>
+</head>
+<body>
+
+<h1>世界の乾杯</h1>
+<div class="subtitle">World Cheers Collection</div>
+
+<div id="country-list-container">
+    </div>
+
+
+<div id="detail-card">
+    <button class="close-btn" onclick="closeDetail()">✕</button>
+    
+    <div class="header">
+        <div class="country-info">
+            <p class="country-name-jp"></p>
+            <p class="country-name-en"></p>
+        </div>
+        <button class="audio-btn" onclick="playAudio()">▶ 発音を聞く</button>
+    </div>
+
+    <p class="cheers-word"></p>
+    <p class="reading"></p>
+    <p class="meaning"></p>
+    
+    <p class="note-title">文化メモ</p>
+    <p class="note-text"></p>
+    
+    <audio id="cheers-audio" src=""></audio>
+</div>
+
+<script>
+    // PWA: Service Workerの登録（オフライン機能のため）
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('SW registered!'))
+                .catch(err => console.log('SW registration failed: ', err));
+        });
+    }
+
+    // JSONデータをJavaScript変数に直接埋め込みます
+    const countryData = [
+        { "region_jp": "アジア", "region_en": "Asia", "country_jp": "日本", "country_en": "Japan", "flag_code": "jp", "cheers_word": "乾杯", "reading": "Kanpai", "meaning": "杯を乾かす＝飲み干す、という意味", "culture_note": "日本では「乾杯」は食事や宴会のスタートを揃える合図。ビジネスから友人同士まで幅広く使われ、ウイスキーでも “Kanpai” は世界的に通じる言葉になっています。", "audio_file": "kanpai.mp3" },
+        { "region_jp": "アジア", "region_en": "Asia", "country_jp": "中国", "country_en": "China", "flag_code": "cn", "cheers_word": "干杯", "reading": "Gānbēi", "meaning": "文字通り「杯を干す」＝飲み干す、という意味", "culture_note": "中国の「干杯」は、基本的にはグラスを飲み干すニュアンスが強く、ビジネスの場では目下の人がより多く飲む慣習もあります。アルコール度数の高い白酒での「干杯」は、かなりハードな乾杯文化です。", "audio_file": "ganbei.mp3" },
+        { "region_jp": "アジア", "region_en": "Asia", "country_jp": "台湾", "country_en": "Taiwan", "flag_code": "tw", "cheers_word": "乾杯", "reading": "Gām-bē", "meaning": "台湾語で「乾杯」の意。飲み干すニュアンス", "culture_note": "台湾では北京語の「干杯」と並んで、台湾語の「Gām-bē」も親しまれています。夜市や居酒屋のようなカジュアルな場でもよく使われ、ウイスキーやビールで和やかに杯を交わします。", "audio_file": "gam-be.mp3" },
+        { "region_jp": "アジア", "region_en": "Asia", "country_jp": "韓国", "country_en": "Korea", "flag_code": "kr", "cheers_word": "건배", "reading": "Geonbae", "meaning": "「乾杯」の意味で、日本語と語源も近い表現", "culture_note": "韓国ではソジュやビールだけでなく、最近はウイスキーを楽しむバーも増えています。目上の人と飲むときには、グラスを少し下げて「건배」と言うなど、礼儀作法も大切にされます。", "audio_file": "geonbae.mp3" },
+        { "region_jp": "アジア", "region_en": "Asia", "country_jp": "タイ", "country_en": "Thailand", "flag_code": "th", "cheers_word": "ชนแก้ว", "reading": "Chon-kaew", "meaning": "「グラスをぶつける」の意味合いが強い表現", "culture_note": "タイではビールやウイスキーをソーダで割って楽しむスタイルが一般的。「Chon-kaew」は、友人同士でグラスを軽く合わせるような、陽気でカジュアルな乾杯の掛け声です。", "audio_file": "chon-kaew.mp3" },
+        { "region_jp": "アジア", "region_en": "Asia", "country_jp": "ベトナム", "country_en": "Vietnam", "flag_code": "vn", "cheers_word": "Một, hai, ba, vô!", "reading": "Mot, hai, ba, yo!", "meaning": "「1・2・3・行こう！」というカウントアップ型の乾杯", "culture_note": "「Một, hai, ba, vô!」は、みんなでテンポを合わせて一斉に飲み始める楽しい掛け声。にぎやかな屋台やローカル酒場などで、ビールやライスワインと一緒によく聞かれます。", "audio_file": "mot-hai-ba-vo.mp3" },
+        { "region_jp": "アジア", "region_en": "Asia", "country_jp": "フィリピン", "country_en": "Philippines", "flag_code": "ph", "cheers_word": "Tagay!", "reading": "Tagay", "meaning": "「飲もう！」というニュアンスのカジュアルな掛け声", "culture_note": "フィリピンでは、ひとつのグラスを順番に回しながら飲む “Tagay スタイル” も有名。「Tagay!」は、場をあたため、みんなで一杯を共有する合図として使われます。", "audio_file": "tagay.mp3" },
+        { "region_jp": "ヨーロッパ", "region_en": "Europe", "country_jp": "スコットランド", "country_en": "Scotland", "flag_code": "gb-sct", "cheers_word": "Slàinte Mhath", "reading": "Slàinte Va", "meaning": "「良い健康を」という意味のゲール語表現", "culture_note": "スコッチウイスキーの本場スコットランドでは、ゲール語の「Slàinte Mhath」が伝統的な乾杯の言葉。一杯のドラマルトを前に、この一言を口にすれば、距離がぐっと縮まります。", "audio_file": "slainte-mhath.mp3" },
+        { "region_jp": "ヨーロッパ", "region_en": "Europe", "country_jp": "アイルランド", "country_en": "Ireland", "flag_code": "ie", "cheers_word": "Sláinte", "reading": "Slawn-cha", "meaning": "「健康に」を意味するゲール語表現", "culture_note": "パブ文化が盛んなアイルランドでは、ビールでもウイスキーでも「Sláinte」が定番の一言。隣り合った知らない人とも、この一声で自然に杯を交わせる、温かい乾杯文化があります。", "audio_file": "slainte-ie.mp3" },
+        { "region_jp": "ヨーロッパ", "region_en": "Europe", "country_jp": "イングランド", "country_en": "England", "flag_code": "gb-eng", "cheers_word": "Cheers", "reading": "Cheers", "meaning": "感謝と「乾杯」の両方のニュアンスをもつ表現", "culture_note": "イングランドでは、パブでグラスを合わせるときの定番が「Cheers」。乾杯だけでなく「ありがとう」の意味もあり、日常の会話の中でも頻繁に使われる言葉です。", "audio_file": "cheers.mp3" },
+        { "region_jp": "ヨーロッパ", "region_en": "Europe", "country_jp": "ドイツ", "country_en": "Germany", "flag_code": "de", "cheers_word": "Prost", "reading": "Prohst", "meaning": "健康や友情を願う伝統的な乾杯の言葉", "culture_note": "ドイツでは乾杯の際に相手の目を見るのが礼儀とされます。ビール文化が強い国ですが、ウイスキー愛好家も多く「Prost」はどんな場でも使える万能ワードです。", "audio_file": "prost.mp3" },
+        { "region_jp": "ヨーロッパ", "region_en": "Europe", "country_jp": "フランス", "country_en": "France", "flag_code": "fr", "cheers_word": "Santé", "reading": "Sahn-tay", "meaning": "「健康に」", "culture_note": "食文化が豊かなフランスでは、食前酒からワイン、ブランデーまで「Santé」が基本の乾杯。フォーマルにもカジュアルにも使える、万能でエレガントな一言です。", "audio_file": "sante.mp3" },
+        { "region_jp": "ヨーロッパ", "region_en": "Europe", "country_jp": "イタリア", "country_en": "Italy", "flag_code": "it", "cheers_word": "Cin Cin", "reading": "Chin-chin", "meaning": "グラスが触れ合う音を表した表現", "culture_note": "陽気で開放的なイタリアでは、乾杯も明るく楽しい雰囲気が基本。ワイン文化の国ですが、食後のウイスキーを楽しむ場面でも「Cin Cin!」が自然に使われます。", "audio_file": "cin-cin.mp3" },
+        { "region_jp": "ヨーロッパ", "region_en": "Europe", "country_jp": "スペイン", "country_en": "Spain", "flag_code": "es", "cheers_word": "Salud", "reading": "Sa-lood", "meaning": "健康を祈る伝統的な表現", "culture_note": "食事を囲む文化が強いスペインでは、テーブルを囲む仲間との一体感を何より大切にします。「Salud」は陽気な場にも、落ち着いたバーにも自然に溶け込みます。", "audio_file": "salud-es.mp3" },
+        { "region_jp": "ヨーロッパ", "region_en": "Europe", "country_jp": "ポルトガル", "country_en": "Portugal", "flag_code": "pt", "cheers_word": "Saúde", "reading": "Sa-oo-je", "meaning": "健康を祈る表現", "culture_note": "港町ポルトの文化が色濃いポルトガル。ウイスキーもゆったりと味わわれ、「Saúde」は穏やかな乾杯の合図としてよく使われます。", "audio_file": "saude-pt.mp3" },
+        { "region_jp": "ヨーロッパ", "region_en": "Europe", "country_jp": "スウェーデン", "flag_code": "se", "cheers_word": "Skål", "reading": "Skoal", "meaning": "健康と友情を称える伝統表現", "culture_note": "北欧の乾杯文化「Skål」は、落ち着いた気品を感じさせます。クラフトウイスキーが増えているスウェーデンでは、静かなバーでもよく聞かれる一言です。", "audio_file": "skal.mp3" },
+        { "region_jp": "ヨーロッパ", "region_en": "Europe", "country_jp": "ノルウェー", "flag_code": "no", "cheers_word": "Skål", "reading": "Skoal", "meaning": "「杯」「ボウル」を語源とする伝統表現", "culture_note": "フィヨルドの国ノルウェーでは、家族や仲間との時間を大切にする文化が根付いています。「Skål」は穏やかで温かい乾杯の一言として愛されています。", "audio_file": "skal-no.mp3" },
+        { "region_jp": "ヨーロッパ", "region_en": "Europe", "country_jp": "デンマーク", "flag_code": "dk", "cheers_word": "Skål", "reading": "Skoal", "meaning": "北欧共通の伝統的な乾杯", "culture_note": "デザインと幸福度の国デンマーク。温かな食卓、キャンドルの灯り、そして静かな「Skål」——北欧らしい落ち着いた乾杯文化が広がります。", "audio_file": "skal-dk.mp3" },
+        { "region_jp": "ヨーロッパ", "region_en": "Europe", "country_jp": "フィンランド", "flag_code": "fi", "cheers_word": "Kippis", "reading": "Kippis", "meaning": "軽快で親しみやすい乾杯表現", "culture_note": "静寂を愛する国フィンランドでは、お酒もゆっくり楽しむスタイルが一般的。「Kippis」は友人同士で使われる、シンプルで温かい乾杯の一言です。", "audio_file": "kippis.mp3" },
+        { "region_jp": "ヨーロッパ", "region_en": "Europe", "country_jp": "ロシア", "flag_code": "ru", "cheers_word": "На здоровье", "reading": "Na zda-ro-vye", "meaning": "「健康に」", "culture_note": "ウォッカ文化が根付くロシアですが、近年はウイスキーも人気。「Na zdorovye」は家族から友人、宴会まで広く使われる挨拶です。", "audio_file": "na-zdorovie.mp3" },
+        { "region_jp": "ヨーロッパ", "region_en": "Europe", "country_jp": "ポーランド", "flag_code": "pl", "cheers_word": "Na zdrowie", "reading": "Na zdro-vye", "meaning": "「健康に」", "culture_note": "ポーランドでは家族の集まりを大切にし、温かい食卓での乾杯が楽しみのひとつ。「Na zdrowie」はどんな場面にも自然に合う一言です。", "audio_file": "na-zdrowie.mp3" },
+        { "region_jp": "ヨーロッパ", "region_en": "Europe", "country_jp": "チェコ", "flag_code": "cz", "cheers_word": "Na zdraví", "reading": "Na zdra-vee", "meaning": "健康を願う表現", "culture_note": "世界有数のビール消費国チェコ。伝統的なパブ文化の中で「Na zdraví」はとてもよく使われ、ウイスキーの場でも違和感なく使える便利な一言です。", "audio_file": "na-zdravi.mp3" },
+        { "region_jp": "ヨーロッパ", "region_en": "Europe", "country_jp": "ハンガリー", "flag_code": "hu", "cheers_word": "Egészségedre", "reading": "Ege-shég-éd-re", "meaning": "「あなたの健康に」", "culture_note": "ハンガリーの乾杯には、相手を思いやるニュアンスが強く込められています。歴史ある食文化とともに、ウイスキーも静かに楽しむスタイルが人気です。", "audio_file": "egeszsegedre.mp3" },
+        { "region_jp": "ヨーロッパ", "region_en": "Europe", "country_jp": "クロアチア", "flag_code": "hr", "cheers_word": "Živjeli", "reading": "Zhiv-ye-lee", "meaning": "「長生きしますように」", "culture_note": "アドリア海に広がる美しい街並みとともに、地元の蒸留酒やウイスキーが楽しまれています。「Živjeli」は祝福の気持ちが込められた温かい乾杯の言葉です。", "audio_file": "zivjeli.mp3" },
+        { "region_jp": "ヨーロッパ", "region_en": "Europe", "country_jp": "ルーマニア", "flag_code": "ro", "cheers_word": "Noroc", "reading": "No-rok", "meaning": "「幸運を」", "culture_note": "ルーマニアでは、テーブルを囲む時間に幸福と繁栄を願う「Noroc」が欠かせません。家庭的で温かい乾杯文化が息づいています。", "audio_file": "noroc.mp3" },
+        { "region_jp": "ヨーロッパ", "region_en": "Europe", "country_jp": "ジョージア", "flag_code": "ge", "cheers_word": "Gaumarjos", "reading": "Gah-mar-jos", "meaning": "「勝利に！」という意味合いをもつ祝詞", "culture_note": "「ワイン発祥の地」と言われるジョージア。伝統的な宴会「スプラ」では、長い祝詞とともに「Gaumarjos」が唱えられます。", "audio_file": "gaumarjos.mp3" },
+        { "region_jp": "北アメリカ", "region_en": "North America", "country_jp": "アメリカ合衆国", "flag_code": "us", "cheers_word": "Cheers", "reading": "Cheers", "meaning": "カジュアルで万能な乾杯の一言", "culture_note": "バーボンやクラフトウイスキーが盛り上がるアメリカでは、「Cheers」はどんな場面でも自然に使える便利な表現です。", "audio_file": "cheers-us.mp3" },
+        { "region_jp": "北アメリカ", "region_en": "North America", "country_jp": "カナダ", "flag_code": "ca", "cheers_word": "Cheers", "reading": "Cheers", "meaning": "英語圏共通のカジュアルな乾杯表現", "culture_note": "メープルの国カナダでもウイスキー文化は根強く、「Cheers」は友人同士からフォーマルまで幅広く使われています。", "audio_file": "cheers-ca.mp3" },
+        { "region_jp": "北アメリカ", "region_en": "North America", "country_jp": "メキシコ", "flag_code": "mx", "cheers_word": "Salud", "reading": "Sa-lood", "meaning": "「健康に」", "culture_note": "テキーラ文化が有名ですが、バーではウイスキーも人気。「Salud」は親しみのある乾杯の一言として広く使われています。", "audio_file": "salud-mx.mp3" },
+        { "region_jp": "南アメリカ", "region_en": "South America", "country_jp": "ブラジル", "flag_code": "br", "cheers_word": "Saúde", "reading": "Sa-oo-je", "meaning": "「健康に」", "culture_note": "陽気で音楽とダンスの国ブラジルでは、乾杯も明るくリズミカル。「Saúde」は友人同士のカジュアルな場面でよく使われます。", "audio_file": "saude-br.mp3" },
+        { "region_jp": "南アメリカ", "region_en": "South America", "country_jp": "アルゼンチン", "flag_code": "ar", "cheers_word": "Salud", "reading": "Sa-lood", "meaning": "「健康に」", "culture_note": "情熱の国アルゼンチンでは、食事とワインを楽しむ文化が深く根付いています。「Salud」はシンプルで温かい乾杯として浸透しています。", "audio_file": "salud-ar.mp3" },
+        { "region_jp": "オセアニア", "region_en": "Oceania", "country_jp": "オーストラリア", "flag_code": "au", "cheers_word": "Cheers", "reading": "Cheers", "meaning": "カジュアルで万能な乾杯の言葉", "culture_note": "ビーチバーからウイスキーバーまで、リラックスした飲酒文化が根付くオーストラリア。乾杯の「Cheers」もその雰囲気にぴったり合います。", "audio_file": "cheers-au.mp3" },
+        { "region_jp": "オセアニア", "region_en": "Oceania", "country_jp": "ニュージーランド", "flag_code": "nz", "cheers_word": "Cheers", "reading": "Cheers", "meaning": "リラックスした乾杯の一言", "culture_note": "自然豊かな国ニュージーランドでは、食事や飲みの場も穏やかな雰囲気が特徴。「Cheers」は友人との何気ない一杯に添えられる一言です。", "audio_file": "cheers-nz.mp3" }
+    ];
+
+    // 詳細カードの要素
+    const detailCard = document.getElementById('detail-card');
+    const cheersAudio = document.getElementById('cheers-audio');
+    const audioPath = 'audio/'; // 音声ファイルを格納するフォルダ名
+
+    // 国データ生成と描画
+    function renderCountries() {
+        const container = document.getElementById('country-list-container');
+        let currentRegion = null;
+        let currentGrid = null;
+        
+        countryData.forEach(data => {
+            // 新しい地域が始まったら新しいセクションを生成
+            if (data.region_jp !== currentRegion) {
+                currentRegion = data.region_jp;
+
+                // <section class="region">
+                const regionSection = document.createElement('section');
+                regionSection.className = 'region';
+
+                // <h2 class="region-title">
+                const regionTitle = document.createElement('h2');
+                regionTitle.className = 'region-title';
+                regionTitle.textContent = `${data.region_jp} / ${data.region_en}`;
+                regionSection.appendChild(regionTitle);
+
+                // <div class="grid">
+                currentGrid = document.createElement('div');
+                currentGrid.className = 'grid';
+                regionSection.appendChild(currentGrid);
+
+                container.appendChild(regionSection);
+            }
+
+            // 国カードのHTMLを生成
+            const countryCardHTML = `
+                <a class="country" data-country-data='${JSON.stringify(data)}'>
+                    <div class="flag">
+                        <img src="https://flagcdn.com/${data.flag_code}.svg" alt="${data.country_en} Flag">
+                    </div>
+                    <p class="name-jp">${data.country_jp}</p>
+                    <p class="name-en">${data.country_en}</p>
+                </a>
+            `;
+            // currentGridにカードを追加
+            currentGrid.insertAdjacentHTML('beforeend', countryCardHTML);
+        });
+        
+        // 生成後にイベントリスナーを設定
+        setupEventListeners();
+    }
+
+    // イベントリスナーの設定
+    function setupEventListeners() {
+        document.querySelectorAll('.country').forEach(card => {
+            card.addEventListener('click', function() {
+                // data-country-data属性のJSONを解析
+                const data = JSON.parse(this.getAttribute('data-country-data'));
+                
+                // 詳細カードのコンテンツを更新
+                document.querySelector('#detail-card .country-name-jp').textContent = data.country_jp;
+                document.querySelector('#detail-card .country-name-en').textContent = data.country_en;
+                document.querySelector('#detail-card .cheers-word').textContent = data.cheers_word;
+                document.querySelector('#detail-card .reading').textContent = data.reading;
+                document.querySelector('#detail-card .meaning').textContent = '【意味】' + data.meaning;
+                document.querySelector('#detail-card .note-text').textContent = data.culture_note.replace(/<br>/g, '\n'); // HTMLタグを削除または変換
+                
+                // Audio要素のsrcを更新
+                if (data.audio_file) {
+                    cheersAudio.src = audioPath + data.audio_file;
+                } else {
+                    cheersAudio.src = ''; // 音声がない場合はクリア
+                }
+                
+                // 詳細カードを表示
+                detailCard.classList.add('active');
+            });
+        });
+    }
+
+    // 閉じるボタンがクリックされた時の処理
+    window.closeDetail = function() {
+        detailCard.classList.remove('active');
+        // 詳細を閉じるときに再生中の音声を停止
+        cheersAudio.pause();
+        cheersAudio.currentTime = 0;
+    };
+    
+    // 発音ボタンがクリックされた時の処理
+    window.playAudio = function() {
+        if (cheersAudio.src) {
+            cheersAudio.play();
+        } else {
+            alert('この国の音声ファイルが見つかりません。');
+        }
+    };
+    
+    // ページロード時に実行
+    document.addEventListener('DOMContentLoaded', renderCountries);
+</script>
+
+</body>
+</html>
